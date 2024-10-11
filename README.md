@@ -41,9 +41,11 @@ $ tarantool server.lua
 - **Efficient Querying**: We use Tarantool's indexes to quickly retrieve the best bid and ask prices for market price calculation.
 - **Fallback Logic**: If there are no orders on one side of the book, we use the available side. If the book is empty, we return a default value.
 
-## Further Developments
+## Scope for Future Development
 
-1. **Scalability**: As the system grows, consider sharding strategies for handling increased load across multiple Tarantool instances.
-2. **Risk Management**: Implement more advanced risk management features such as liquidation mechanisms.
-3. **API Layer**: Develop a WebSocket API for client interactions.
-4. **Fee Structure**: Implement funding fees and trading fees.
+1. **ID Sequencing**: Implement a sequencing mechanism for generating unique, monotonically increasing IDs for users, orders and positions.
+2. **Trade History**: Create a new 'trade' space to store executed trades for analytics.
+3. **Liquidation**: Implement a liquidation mechanism to close out positions that fall below the maintenance margin.
+4. **Fee Structure**: Implement funding fees for perpetual futures and trading fees to monetize the exchange and incentivize market stability.
+5. **Scalability**: As the system grows, consider sharding strategies for handling increased load across multiple Tarantool instances.
+6. **API Layer**: Develop a WebSocket API for client interactions.

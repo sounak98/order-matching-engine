@@ -17,13 +17,6 @@ require('utils')
 local function process_order(order)
   local orderbook = Orderbook:new { market = order.market }
 
-  -- -- Load existing orders for the market
-  -- local existing_orders = box.space.orders.index.market:select { order.market }
-  -- for _, existing_order in ipairs(existing_orders) do
-  --   log.info(string.format("existing_order: %s", existing_order))
-  --   orderbook:add_order(Order:new(existing_order))
-  -- end
-
   -- Add the new order
   if not orderbook:add_order(order) then
     log.error(string.format("Order rejected: Insufficient balance for user %s", order.user_id))
@@ -36,7 +29,7 @@ local function process_order(order)
   -- Calculate margin after execution
   local margin = CalculateMarginRatio(order.user_id)
 
-  -- Check if margin is sufficient (10% in this example)
+  -- Check if margin ratio is sufficient (10%)
   if margin < 0.1 then
     -- Revert the transaction
     box.rollback()
@@ -50,25 +43,21 @@ end
 
 -- Async order receiver
 local function order_receiver()
-  -- local ch = fiber.channel(100)
+  local ch = fiber.channel(100)
 
-  -- fiber.create(function()
-  --   while true do
-  --     local order = ch:get()
-  --     if order then
-  --       box.atomic(function()
-  --         process_order(order)
-  --       end)
-  --     end
-  --   end
-  -- end)
-
-  -- return function(order)
-  --   ch:put(order)
-  -- end
+  fiber.create(function()
+    while true do
+      local order = ch:get()
+      if order then
+        box.atomic(function()
+          process_order(order)
+        end)
+      end
+    end
+  end)
 
   return function(order)
-    process_order(order)
+    ch:put(order)
   end
 end
 
@@ -88,8 +77,8 @@ local function run_tests()
   reset_database()
 
   -- Initialize user balances
-  box.space.users:insert { 'user1', 1000000 } -- 1 million initial balance
-  box.space.users:insert { 'user2', 1000000 } -- 1 million initial balance
+  box.space.users:insert { 'user1', 1000000 }
+  box.space.users:insert { 'user2', 1000000 }
 
   log.info("Initial state:")
   PrintUserInfo('user1')
