@@ -27,10 +27,10 @@ local function process_order(order)
   orderbook:match_orders()
 
   -- Calculate margin after execution
-  local margin = CalculateMarginRatio(order.user_id)
+  local margin_ratio = CalculateMarginRatio(order.user_id)
 
   -- Check if margin ratio is sufficient (10%)
-  if margin < 0.1 then
+  if margin_ratio < 0.1 then
     -- Revert the transaction
     box.rollback()
     log.error(string.format("Order rejected: Insufficient margin for user %s", order.user_id))
